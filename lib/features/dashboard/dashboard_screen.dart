@@ -119,7 +119,7 @@ class _Header extends StatelessWidget {
           ),
           IconButton(
             tooltip: 'Settings',
-            icon: const Icon(Icons.tune_rounded),
+            icon: const Icon(Icons.settings_outlined),
             onPressed: () => Navigator.of(context).push(
               MaterialPageRoute<void>(builder: (_) => const SettingsScreen()),
             ),

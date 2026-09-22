@@ -178,6 +178,7 @@ void main() {
         PayflowApp(expenses: store, settings: settings, backups: backups));
     await tester.pumpAndSettle();
 
+    expect(find.byIcon(Icons.settings_outlined), findsOneWidget);
     await tester.tap(find.byTooltip('Settings'));
     await tester.pumpAndSettle();
     await tester.scrollUntilVisible(find.text('Backups'), 200);
