@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:payflow/app.dart';
+import 'package:payflow/data/backup/backup_service.dart';
 import 'fixtures/demo_expenses.dart';
 import 'package:payflow/data/repositories/expense_repository.dart';
 import 'package:payflow/data/repositories/in_memory_expense_repository.dart';
@@ -35,6 +38,15 @@ Future<ExpenseStore> _pumpApp(
   await tester.pumpWidget(PayflowApp(expenses: store, settings: settings));
   await tester.pumpAndSettle();
   return store;
+}
+
+/// Lets real file I/O finish (it can't run inside the fake test clock).
+Future<void> _pumpUntil(WidgetTester tester, Finder finder) async {
+  for (var i = 0; i < 50 && finder.evaluate().isEmpty; i++) {
+    await tester.runAsync(() => Future.delayed(const Duration(milliseconds: 20)));
+    await tester.pump();
+  }
+  expect(finder, findsOneWidget);
 }
 
 class _FailingRepository implements ExpenseRepository {
@@ -143,6 +155,44 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Add at least one domain'), findsOneWidget);
     expect(store.expenses.length, count);
+  });
+
+  testWidgets('settings opens backups and creates one', (tester) async {
+    tester.view.physicalSize = const Size(390, 844) * 3;
+    tester.view.devicePixelRatio = 3;
+    addTearDown(tester.view.reset);
+    final dir = (await tester.runAsync(
+        () => Directory.systemTemp.createTemp('payflow_ui')))!;
+    addTearDown(() => dir.deleteSync(recursive: true));
+    final settings = SettingsStore();
+    final store = ExpenseStore(
+      repository: InMemoryExpenseRepository(
+          seed: buildDemoExpenses(_today), latency: Duration.zero),
+      settings: settings,
+      clock: () => _today,
+    );
+    await tester.runAsync(store.load);
+    final backups = BackupService(
+        expenses: store, settings: settings, defaultDirectory: () async => dir);
+    await tester.pumpWidget(
+        PayflowApp(expenses: store, settings: settings, backups: backups));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Settings'));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(find.text('Backups'), 200);
+    await tester.tap(find.text('Backups'));
+    await _pumpUntil(tester, find.text('No backups yet'));
+    await tester.scrollUntilVisible(find.text('Change folder'), 200,
+        scrollable: find.byType(Scrollable).last);
+    expect(find.text('Default folder'), findsOneWidget);
+    expect(find.text('Use default folder'), findsNothing);
+    await tester.scrollUntilVisible(find.text('Back up now'), -200,
+        scrollable: find.byType(Scrollable).last);
+
+    await tester.tap(find.text('Back up now'));
+    await _pumpUntil(tester, find.textContaining('Backup saved'));
+    expect(find.widgetWithText(TextButton, 'Restore'), findsOneWidget);
   });
 
   testWidgets('validation blocks an empty form', (tester) async {

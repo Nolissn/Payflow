@@ -5,6 +5,7 @@ import '../../core/theme/brand.dart';
 import '../../shared/widgets/brand_mark.dart';
 import '../../shared/widgets/surfaces.dart';
 import '../../state/app_scope.dart';
+import 'backup_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -94,6 +95,17 @@ class SettingsScreen extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 6),
             child: Column(
               children: [
+                if (BackupScope.maybeOf(context) case final backups?)
+                  ListTile(
+                    leading: const Icon(Icons.backup_outlined),
+                    title: const Text('Backups'),
+                    subtitle: const Text('Back up and restore your data'),
+                    trailing: const Icon(Icons.chevron_right_rounded),
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                          builder: (_) => BackupScreen(backups: backups)),
+                    ),
+                  ),
                 ListTile(
                   leading: Icon(Icons.delete_sweep_outlined,
                       color: Theme.of(context).colorScheme.error),

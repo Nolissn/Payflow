@@ -117,9 +117,12 @@ class ExpenseStore extends ChangeNotifier {
     await save(expense.copyWith(status: status));
   }
 
-  Future<void> clearAll() async {
-    await _repository.replaceAll(const []);
-    _expenses = const [];
+  Future<void> clearAll() => replaceAll(const []);
+
+  /// Replaces every expense, e.g. when restoring a backup.
+  Future<void> replaceAll(List<RecurringExpense> expenses) async {
+    await _repository.replaceAll(expenses);
+    _expenses = List.unmodifiable(expenses);
     _changed();
   }
 

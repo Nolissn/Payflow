@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../core/formatting/money_format.dart';
 
-/// User preferences. Kept in memory for now; persisting them (locally or in
-/// a cloud profile) only requires changes inside this class.
+/// User preferences. Listeners are notified on every change, which is also
+/// what persists them (see `SettingsFile`).
 class SettingsStore extends ChangeNotifier {
   SettingsStore({
     this._themeMode = ThemeMode.system,
@@ -51,6 +51,29 @@ class SettingsStore extends ChangeNotifier {
   set deadlineReminderDays(int value) {
     if (value == _deadlineReminderDays) return;
     _deadlineReminderDays = value;
+    notifyListeners();
+  }
+
+  Map<String, Object?> toJson() => {
+        'themeMode': _themeMode.name,
+        'currency': _currency.name,
+        'largePaymentThreshold': _largePaymentThreshold,
+        'deadlineReminderDays': _deadlineReminderDays,
+      };
+
+  /// Applies values from [toJson]. Unknown or missing keys keep their
+  /// current value so older files stay readable.
+  void applyJson(Map<String, Object?> json) {
+    T? pick<T extends Enum>(List<T> values, Object? name) =>
+        values.where((v) => v.name == name).firstOrNull;
+
+    _themeMode = pick(ThemeMode.values, json['themeMode']) ?? _themeMode;
+    _currency = pick(AppCurrency.values, json['currency']) ?? _currency;
+    _money = MoneyFormat(_currency);
+    final threshold = json['largePaymentThreshold'];
+    if (threshold is num) _largePaymentThreshold = threshold.toDouble();
+    final days = json['deadlineReminderDays'];
+    if (days is num) _deadlineReminderDays = days.toInt();
     notifyListeners();
   }
 }

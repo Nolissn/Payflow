@@ -2,22 +2,30 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'core/theme/app_theme.dart';
+import 'data/backup/backup_service.dart';
 import 'features/shell/app_shell.dart';
 import 'state/app_scope.dart';
 import 'state/expense_store.dart';
 import 'state/settings_store.dart';
 
 class PayflowApp extends StatelessWidget {
-  const PayflowApp({super.key, required this.expenses, required this.settings});
+  const PayflowApp({
+    super.key,
+    required this.expenses,
+    required this.settings,
+    this.backups,
+  });
 
   final ExpenseStore expenses;
   final SettingsStore settings;
+  final BackupService? backups;
 
   @override
   Widget build(BuildContext context) {
     return AppScope(
       expenses: expenses,
       settings: settings,
+      backups: backups,
       child: ListenableBuilder(
         listenable: settings,
         builder: (context, _) => MaterialApp(

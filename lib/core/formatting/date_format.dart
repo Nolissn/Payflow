@@ -13,6 +13,7 @@ abstract final class Dates {
   static final _monthShort = DateFormat('MMM', 'en_US');
   static final _day = DateFormat('d', 'en_US');
   static final _weekdayShort = DateFormat('EEE', 'en_US');
+  static final _time = DateFormat('HH:mm', 'en_US');
 
   /// "Sep 22" (adds the year if it differs from [reference]'s year).
   static String short(DateTime d, {DateTime? reference}) =>
@@ -21,6 +22,8 @@ abstract final class Dates {
           : _short.format(d);
 
   static String withYear(DateTime d) => _shortYear.format(d);
+  static String withTime(DateTime d) =>
+      '${_shortYear.format(d)} · ${_time.format(d)}';
   static String weekday(DateTime d) => _weekday.format(d);
   static String long(DateTime d) => _long.format(d);
   static String full(DateTime d) => _full.format(d);

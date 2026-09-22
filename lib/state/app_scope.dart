@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 
 import '../core/formatting/money_format.dart';
+import '../data/backup/backup_service.dart';
 import 'expense_store.dart';
 import 'settings_store.dart';
 
@@ -13,20 +14,39 @@ class AppScope extends StatelessWidget {
     super.key,
     required this.expenses,
     required this.settings,
+    this.backups,
     required this.child,
   });
 
   final ExpenseStore expenses;
   final SettingsStore settings;
+  final BackupService? backups;
   final Widget child;
 
   @override
   Widget build(BuildContext context) {
-    return SettingsScope(
-      notifier: settings,
-      child: ExpenseScope(notifier: expenses, child: child),
+    return BackupScope(
+      backups: backups,
+      child: SettingsScope(
+        notifier: settings,
+        child: ExpenseScope(notifier: expenses, child: child),
+      ),
     );
   }
+}
+
+class BackupScope extends InheritedWidget {
+  const BackupScope({super.key, required this.backups, required super.child});
+
+  final BackupService? backups;
+
+  /// `null` when backups aren't available (e.g. in tests).
+  static BackupService? maybeOf(BuildContext context) =>
+      context.getInheritedWidgetOfExactType<BackupScope>()?.backups;
+
+  @override
+  bool updateShouldNotify(BackupScope oldWidget) =>
+      backups != oldWidget.backups;
 }
 
 class ExpenseScope extends InheritedNotifier<ExpenseStore> {
