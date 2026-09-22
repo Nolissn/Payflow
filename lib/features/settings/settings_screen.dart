@@ -22,7 +22,10 @@ class SettingsScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Settings')),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 0, 16, 40),
+        // Clear the system navigation bar, plus breathing room below the
+        // app info at the end.
+        padding: EdgeInsets.fromLTRB(
+            16, 0, 16, 64 + MediaQuery.paddingOf(context).bottom),
         children: [
           const SectionHeader(
               title: 'Appearance', padding: EdgeInsets.fromLTRB(4, 12, 4, 10)),
