@@ -58,7 +58,10 @@ class _SubscriptionsScreenState extends State<SubscriptionsScreen> {
     final q = _query.trim().toLowerCase();
     final items = o.all
         .where(_filter.matches)
-        .where((e) => q.isEmpty || e.name.toLowerCase().contains(q))
+        .where((e) =>
+            q.isEmpty ||
+            e.name.toLowerCase().contains(q) ||
+            e.domains.any((d) => d.contains(q)))
         .toList();
     int byNext(RecurringExpense a, RecurringExpense b) {
       final da = o.nextPaymentOf(a), db = o.nextPaymentOf(b);

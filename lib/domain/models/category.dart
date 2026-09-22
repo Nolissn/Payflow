@@ -88,6 +88,9 @@ abstract final class DefaultCategories {
   static const cloud = ExpenseCategory(
       id: 'cloud', name: 'Cloud / Hosting', iconKey: 'cloud',
       colorValue: 0xFF3AA6C9, group: CostGroup.software);
+  static const domain = ExpenseCategory(
+      id: 'domain', name: 'Domain', iconKey: 'domain',
+      colorValue: 0xFFC7763C, group: CostGroup.software);
   static const telecom = ExpenseCategory(
       id: 'telecom', name: 'Telecommunications', iconKey: 'telecom',
       colorValue: 0xFF7C8A3A, group: CostGroup.fixedCosts,
@@ -108,6 +111,7 @@ abstract final class DefaultCategories {
     transportation,
     finance,
     cloud,
+    domain,
     telecom,
     entertainment,
     other,

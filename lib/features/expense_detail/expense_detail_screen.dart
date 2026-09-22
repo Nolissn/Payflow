@@ -267,6 +267,40 @@ class ExpenseDetailScreen extends StatelessWidget {
             ),
           ],
 
+          // Domains
+          if (expense.domains.isNotEmpty) ...[
+            SectionHeader(
+                title: expense.domains.length == 1
+                    ? 'Domain'
+                    : '${expense.domains.length} domains',
+                padding: const EdgeInsets.fromLTRB(4, 24, 4, 10)),
+            SurfaceCard(
+              padding: const EdgeInsets.symmetric(vertical: 6),
+              child: Column(
+                children: [
+                  for (final d in expense.domains)
+                    ListTile(
+                      leading: Icon(Icons.language_rounded,
+                          size: 20, color: c.textMuted),
+                      title: Text(d),
+                      trailing: const Icon(Icons.open_in_new_rounded, size: 18),
+                      onTap: () => launchUrl(Uri.https(d),
+                          mode: LaunchMode.externalApplication),
+                    ),
+                ],
+              ),
+            ),
+            if (expense.domains.length > 1)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(4, 10, 4, 0),
+                child: Text(
+                  '≈ ${money(CostCalculator.yearly(expense) / expense.domains.length)} '
+                  'per domain per year',
+                  style: context.text.bodySmall,
+                ),
+              ),
+          ],
+
           // Details
           const SectionHeader(
               title: 'Details', padding: EdgeInsets.fromLTRB(4, 24, 4, 10)),

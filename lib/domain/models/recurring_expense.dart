@@ -24,6 +24,7 @@ class RecurringExpense {
     this.noticePeriod,
     this.note,
     this.url,
+    this.domains = const [],
     this.createdAt,
     this.updatedAt,
   });
@@ -51,6 +52,10 @@ class RecurringExpense {
   final NoticePeriod? noticePeriod;
   final String? note;
   final String? url;
+
+  /// Domain names covered by this expense (used by the "Domain" category,
+  /// where [name] is the registrar), e.g. `["example.com", "example.org"]`.
+  final List<String> domains;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -66,6 +71,7 @@ class RecurringExpense {
     Object? noticePeriod = _unset,
     Object? note = _unset,
     Object? url = _unset,
+    List<String>? domains,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -85,6 +91,7 @@ class RecurringExpense {
           : noticePeriod as NoticePeriod?,
       note: identical(note, _unset) ? this.note : note as String?,
       url: identical(url, _unset) ? this.url : url as String?,
+      domains: domains ?? this.domains,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -103,6 +110,7 @@ class RecurringExpense {
         'noticePeriod': noticePeriod?.toJson(),
         'note': note,
         'url': url,
+        'domains': domains,
         'createdAt': createdAt?.toIso8601String(),
         'updatedAt': updatedAt?.toIso8601String(),
       };
@@ -127,6 +135,7 @@ class RecurringExpense {
       noticePeriod: notice == null ? null : NoticePeriod.fromJson(notice),
       note: json['note'] as String?,
       url: json['url'] as String?,
+      domains: [...?(json['domains'] as List?)?.cast<String>()],
       createdAt: date('createdAt'),
       updatedAt: date('updatedAt'),
     );
@@ -146,9 +155,19 @@ class RecurringExpense {
       other.endDate == endDate &&
       other.noticePeriod == noticePeriod &&
       other.note == note &&
-      other.url == url;
+      other.url == url &&
+      _listEquals(other.domains, domains);
 
   @override
   int get hashCode => Object.hash(id, name, amount, categoryId, cycle,
-      nextPaymentDate, status, startDate, endDate, noticePeriod, note, url);
+      nextPaymentDate, status, startDate, endDate, noticePeriod, note, url,
+      Object.hashAll(domains));
+}
+
+bool _listEquals(List<String> a, List<String> b) {
+  if (a.length != b.length) return false;
+  for (var i = 0; i < a.length; i++) {
+    if (a[i] != b[i]) return false;
+  }
+  return true;
 }

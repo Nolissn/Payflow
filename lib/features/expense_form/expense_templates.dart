@@ -20,6 +20,7 @@ const expenseTemplates = <ExpenseTemplate>[
   ExpenseTemplate('Apple One', 19.95, DefaultCategories.entertainment, BillingCycle.monthly),
   ExpenseTemplate('iCloud+', 2.99, DefaultCategories.cloud, BillingCycle.monthly),
   ExpenseTemplate('Google One', 1.99, DefaultCategories.cloud, BillingCycle.monthly),
+  ExpenseTemplate('Namecheap', 12.00, DefaultCategories.domain, BillingCycle.yearly),
   ExpenseTemplate('Microsoft 365', 99.00, DefaultCategories.software, BillingCycle.yearly),
   ExpenseTemplate('Adobe CC', 66.45, DefaultCategories.software, BillingCycle.monthly),
   ExpenseTemplate('Gym', 29.99, DefaultCategories.fitness, BillingCycle.monthly),

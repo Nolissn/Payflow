@@ -49,11 +49,16 @@ class ExpenseTile extends StatelessWidget {
         expense.cycle != BillingCycle.monthly &&
         !inactive;
 
+    final label = switch (expense.domains.length) {
+      0 => category.name,
+      1 => expense.domains.first,
+      final n => '$n domains',
+    };
     final subtitle = switch (expense.status) {
       ExpenseStatus.paused => 'Paused',
       ExpenseStatus.cancelled => 'Cancelled',
-      _ when next == null => category.name,
-      _ => '${category.name} · ${Dates.short(next, reference: overview.today)}',
+      _ when next == null => label,
+      _ => '$label · ${Dates.short(next, reference: overview.today)}',
     };
 
     return Semantics(

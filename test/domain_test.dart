@@ -10,6 +10,7 @@ import 'package:payflow/domain/services/cost_calculator.dart';
 import 'package:payflow/domain/services/finance_overview.dart';
 import 'package:payflow/domain/services/insights_engine.dart';
 import 'package:payflow/domain/services/payment_schedule.dart';
+import 'package:payflow/features/expense_form/expense_form_sheet.dart';
 
 RecurringExpense _e(
   String id,
@@ -185,5 +186,29 @@ void main() {
     final e = _e('j', 99, BillingCycle.yearly, DateTime(2026, 11, 15),
         notice: const NoticePeriod(30, NoticeUnit.day));
     expect(RecurringExpense.fromJson(e.toJson()), e);
+  });
+
+  test('domains survive a json round trip', () {
+    final e = _e('d', 24, BillingCycle.yearly, DateTime(2026, 11, 15))
+        .copyWith(domains: ['example.com', 'example.org']);
+    final back = RecurringExpense.fromJson(e.toJson());
+    expect(back.domains, ['example.com', 'example.org']);
+    expect(back, e);
+    expect(e == e.copyWith(domains: ['example.com']), isFalse);
+  });
+
+  test('json without domains still loads', () {
+    final json = _e('o', 5, BillingCycle.monthly, DateTime(2026, 10, 1)).toJson()
+      ..remove('domains');
+    expect(RecurringExpense.fromJson(json).domains, isEmpty);
+  });
+
+  test('normalizeDomain cleans up pasted URLs', () {
+    expect(normalizeDomain('https://www.Example.com/path?q=1'), 'example.com');
+    expect(normalizeDomain('shop.example.co.uk'), 'shop.example.co.uk');
+    expect(normalizeDomain('example.com.'), 'example.com');
+    expect(normalizeDomain('localhost'), isNull);
+    expect(normalizeDomain('not a domain'), isNull);
+    expect(normalizeDomain('-bad-.com'), isNull);
   });
 }

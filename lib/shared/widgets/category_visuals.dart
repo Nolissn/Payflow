@@ -15,6 +15,7 @@ abstract final class CategoryVisuals {
     'transportation': Icons.directions_transit_outlined,
     'finance': Icons.account_balance_outlined,
     'cloud': Icons.cloud_outlined,
+    'domain': Icons.language_rounded,
     'telecom': Icons.cell_tower_rounded,
     'entertainment': Icons.auto_stories_outlined,
     'other': Icons.category_outlined,

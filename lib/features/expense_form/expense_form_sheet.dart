@@ -46,6 +46,8 @@ class _ExpenseFormSheetState extends State<ExpenseFormSheet> {
   late final TextEditingController _noticeCount;
   late final TextEditingController _url;
   late final TextEditingController _note;
+  late final TextEditingController _domainInput;
+  late List<String> _domains;
 
   late BillingFrequency _frequency;
   late CycleUnit _customUnit;
@@ -60,6 +62,7 @@ class _ExpenseFormSheetState extends State<ExpenseFormSheet> {
   bool _saving = false;
 
   bool get _isEdit => widget.existing != null;
+  bool get _isDomain => _categoryId == DefaultCategories.domain.id;
 
   @override
   void initState() {
@@ -84,6 +87,8 @@ class _ExpenseFormSheetState extends State<ExpenseFormSheet> {
         TextEditingController(text: '${e?.noticePeriod?.count ?? 30}');
     _url = TextEditingController(text: e?.url ?? '');
     _note = TextEditingController(text: e?.note ?? '');
+    _domainInput = TextEditingController();
+    _domains = [...?e?.domains];
     _showDetails = e != null &&
         (e.noticePeriod != null ||
             e.startDate != null ||
@@ -101,7 +106,9 @@ class _ExpenseFormSheetState extends State<ExpenseFormSheet> {
 
   @override
   void dispose() {
-    for (final c in [_name, _amount, _customCount, _noticeCount, _url, _note]) {
+    for (final c in [
+      _name, _amount, _customCount, _noticeCount, _url, _note, _domainInput,
+    ]) {
       c.dispose();
     }
     super.dispose();
@@ -134,7 +141,37 @@ class _ExpenseFormSheetState extends State<ExpenseFormSheet> {
     });
   }
 
+  void _selectCategory(String id) {
+    setState(() {
+      _categoryId = id;
+      // Domains are almost always registered per year.
+      if (!_isEdit && _isDomain && _frequency == BillingFrequency.monthly) {
+        _frequency = BillingFrequency.yearly;
+      }
+    });
+  }
+
+  /// Adds every domain typed or pasted into the input (comma, space or
+  /// newline separated). Returns false if something invalid was entered.
+  bool _addDomains() {
+    final parts = _domainInput.text
+        .split(RegExp(r'[\s,;]+'))
+        .where((p) => p.isNotEmpty)
+        .map(normalizeDomain)
+        .toList();
+    if (parts.isEmpty) return true;
+    if (parts.any((d) => d == null)) return false;
+    setState(() {
+      for (final d in parts.cast<String>()) {
+        if (!_domains.contains(d)) _domains.add(d);
+      }
+      _domainInput.clear();
+    });
+    return true;
+  }
+
   Future<void> _save() async {
+    if (_isDomain) _addDomains();
     if (!_formKey.currentState!.validate()) {
       HapticFeedback.lightImpact();
       return;
@@ -164,6 +201,7 @@ class _ExpenseFormSheetState extends State<ExpenseFormSheet> {
       noticePeriod: _notice,
       url: url.isEmpty ? null : _normalizeUrl(url),
       note: note.isEmpty ? null : note,
+      domains: _isDomain ? List.unmodifiable(_domains) : const [],
     );
     final messenger = ScaffoldMessenger.of(context);
     final navigator = Navigator.of(context);
@@ -244,10 +282,10 @@ class _ExpenseFormSheetState extends State<ExpenseFormSheet> {
                       autofocus: !_isEdit,
                       textCapitalization: TextCapitalization.words,
                       textInputAction: TextInputAction.next,
-                      decoration: const InputDecoration(
-                        labelText: 'Name or provider',
-                        hintText: 'e.g. Netflix',
-                        prefixIcon: Icon(Icons.storefront_outlined),
+                      decoration: InputDecoration(
+                        labelText: _isDomain ? 'Registrar' : 'Name or provider',
+                        hintText: _isDomain ? 'e.g. Namecheap' : 'e.g. Netflix',
+                        prefixIcon: const Icon(Icons.storefront_outlined),
                       ),
                       validator: (v) => (v == null || v.trim().isEmpty)
                           ? 'Give it a name'
@@ -307,7 +345,24 @@ class _ExpenseFormSheetState extends State<ExpenseFormSheet> {
                     _CategoryPicker(
                       selectedId: _categoryId,
                       categories: context.store.categories,
-                      onChanged: (id) => setState(() => _categoryId = id),
+                      onChanged: _selectCategory,
+                    ),
+                    AnimatedSize(
+                      duration: const Duration(milliseconds: 200),
+                      curve: Curves.easeOutCubic,
+                      alignment: Alignment.topCenter,
+                      child: _isDomain
+                          ? Padding(
+                              padding: const EdgeInsets.only(top: 18),
+                              child: _DomainsEditor(
+                                domains: _domains,
+                                controller: _domainInput,
+                                onAdd: _addDomains,
+                                onRemove: (d) =>
+                                    setState(() => _domains.remove(d)),
+                              ),
+                            )
+                          : const SizedBox(width: double.infinity),
                     ),
                     const SizedBox(height: 18),
                     _DateField(
@@ -524,6 +579,95 @@ class _QuickPicks extends StatelessWidget {
         ),
       ],
     );
+  }
+}
+
+/// Turns `https://www.Example.com/path` into `example.com`.
+/// Returns null if the input isn't a plausible domain name.
+String? normalizeDomain(String input) {
+  var d = input.trim().toLowerCase();
+  d = d.replaceFirst(RegExp(r'^[a-z]+://'), '');
+  d = d.split(RegExp(r'[/?#]')).first;
+  d = d.replaceFirst(RegExp(r'^www\.'), '').replaceFirst(RegExp(r'\.$'), '');
+  final valid = RegExp(
+    r'^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9-]{2,63}$',
+  );
+  return valid.hasMatch(d) ? d : null;
+}
+
+class _DomainsEditor extends StatelessWidget {
+  const _DomainsEditor({
+    required this.domains,
+    required this.controller,
+    required this.onAdd,
+    required this.onRemove,
+  });
+
+  final List<String> domains;
+  final TextEditingController controller;
+  final bool Function() onAdd;
+  final ValueChanged<String> onRemove;
+
+  @override
+  Widget build(BuildContext context) {
+    return FormField<void>(
+      validator: (_) {
+        if (controller.text.trim().isNotEmpty) {
+          return 'That doesn’t look like a domain';
+        }
+        return domains.isEmpty ? 'Add at least one domain' : null;
+      },
+      builder: (field) => Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _Label(domains.isEmpty ? 'Domains' : 'Domains (${domains.length})'),
+          TextField(
+            controller: controller,
+            keyboardType: TextInputType.url,
+            autocorrect: false,
+            textInputAction: TextInputAction.done,
+            decoration: InputDecoration(
+              hintText: 'example.com, example.org',
+              prefixIcon: const Icon(Icons.language_rounded),
+              errorText: field.errorText,
+              suffixIcon: IconButton(
+                tooltip: 'Add domain',
+                icon: const Icon(Icons.add_rounded),
+                onPressed: () => _submit(field),
+              ),
+            ),
+            onChanged: (_) {
+              if (field.hasError) field.validate();
+            },
+            onSubmitted: (_) => _submit(field),
+          ),
+          if (domains.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final d in domains)
+                  InputChip(
+                    label: Text(d),
+                    onDeleted: () => onRemove(d),
+                    deleteButtonTooltipMessage: 'Remove $d',
+                  ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  void _submit(FormFieldState<void> field) {
+    if (onAdd()) {
+      HapticFeedback.selectionClick();
+      if (field.hasError) field.validate();
+    } else {
+      field.validate();
+    }
   }
 }
 

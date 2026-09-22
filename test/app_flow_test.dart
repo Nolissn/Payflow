@@ -82,6 +82,69 @@ void main() {
     expect(store.overview.summary.yearly, closeTo(before + 10, 1e-9));
   });
 
+  testWidgets('adding domains under a registrar', (tester) async {
+    final store = await _pumpApp(tester);
+
+    await tester.tap(find.byTooltip('Add recurring expense'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+        find.widgetWithText(TextFormField, 'Name or provider'), 'Porkbun');
+    await tester.enterText(find.widgetWithText(TextFormField, 'Price'), '30');
+    FocusManager.instance.primaryFocus?.unfocus();
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.widgetWithText(ChoiceChip, 'Domain'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(ChoiceChip, 'Domain'));
+    await tester.pumpAndSettle();
+
+    final domainInput = find.widgetWithText(TextField, 'example.com, example.org');
+    await tester.enterText(domainInput, 'https://www.Alpha.com/, beta.dev');
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await tester.pumpAndSettle();
+    expect(find.widgetWithText(InputChip, 'alpha.com'), findsOneWidget);
+    expect(find.widgetWithText(InputChip, 'beta.dev'), findsOneWidget);
+
+    await tester.enterText(domainInput, 'gamma.io');
+    await tester.ensureVisible(find.text('Add expense'));
+    await tester.tap(find.text('Add expense'));
+    await tester.pumpAndSettle();
+
+    final saved = store.expenses.singleWhere((e) => e.name == 'Porkbun');
+    expect(saved.categoryId, DefaultCategories.domain.id);
+    expect(saved.cycle.label, 'Yearly');
+    expect(saved.domains, ['alpha.com', 'beta.dev', 'gamma.io']);
+
+    await tester.tap(find.text('Subscriptions').last);
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).first, 'beta');
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Porkbun'));
+    await tester.pumpAndSettle();
+    expect(find.text('3 domains'), findsOneWidget);
+    expect(find.text('gamma.io'), findsOneWidget);
+  });
+
+  testWidgets('domain category needs at least one domain', (tester) async {
+    final store = await _pumpApp(tester);
+    final count = store.expenses.length;
+    await tester.tap(find.byTooltip('Add recurring expense'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+        find.widgetWithText(TextFormField, 'Name or provider'), 'Porkbun');
+    await tester.enterText(find.widgetWithText(TextFormField, 'Price'), '30');
+    FocusManager.instance.primaryFocus?.unfocus();
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.widgetWithText(ChoiceChip, 'Domain'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(ChoiceChip, 'Domain'));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Add expense'));
+    await tester.tap(find.text('Add expense'));
+    await tester.pumpAndSettle();
+    expect(find.text('Add at least one domain'), findsOneWidget);
+    expect(store.expenses.length, count);
+  });
+
   testWidgets('validation blocks an empty form', (tester) async {
     final store = await _pumpApp(tester);
     final count = store.expenses.length;
