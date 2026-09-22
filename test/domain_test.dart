@@ -9,6 +9,7 @@ import 'package:payflow/domain/models/recurring_expense.dart';
 import 'package:payflow/domain/services/cost_calculator.dart';
 import 'package:payflow/domain/services/finance_overview.dart';
 import 'package:payflow/domain/services/insights_engine.dart';
+import 'package:payflow/domain/services/payment_reminders.dart';
 import 'package:payflow/domain/services/payment_schedule.dart';
 import 'package:payflow/features/expense_form/expense_form_sheet.dart';
 
@@ -132,6 +133,57 @@ void main() {
       final d = PaymentSchedule.nextDeadline(e, today)!;
       expect(d.renewalDate, DateTime(2027, 10, 15));
       expect(d.deadline, DateTime(2027, 9, 15));
+    });
+  });
+
+  group('PaymentReminders', () {
+    test('reminds 7, 3 and 1 day before each charge at 09:00', () {
+      final plan = PaymentReminders.plan(
+        [_e('Netflix', 12.99, BillingCycle.yearly, DateTime(2026, 10, 10))],
+        DateTime(2026, 9, 22, 12),
+      );
+      expect(plan.map((r) => r.fireAt), [
+        DateTime(2026, 10, 3, 9),
+        DateTime(2026, 10, 7, 9),
+        DateTime(2026, 10, 9, 9),
+      ]);
+      expect(plan.map((r) => r.daysBefore), [7, 3, 1]);
+      expect(plan.every((r) => r.amount == 12.99), isTrue);
+      expect(plan.every((r) => r.paymentDate == DateTime(2026, 10, 10)), isTrue);
+    });
+
+    test('skips reminders whose time has passed', () {
+      // Charge in 2 days: the 7- and 3-day reminders are already over.
+      final plan = PaymentReminders.plan(
+        [_e('Spotify', 9.99, BillingCycle.yearly, DateTime(2026, 9, 24))],
+        DateTime(2026, 9, 22, 12),
+      );
+      expect(plan.single.daysBefore, 1);
+      expect(plan.single.fireAt, DateTime(2026, 9, 23, 9));
+    });
+
+    test('ignores paused and cancelled expenses', () {
+      final plan = PaymentReminders.plan([
+        _e('a', 5, BillingCycle.monthly, DateTime(2026, 10, 10),
+            status: ExpenseStatus.paused),
+        _e('b', 5, BillingCycle.monthly, DateTime(2026, 10, 10),
+            status: ExpenseStatus.cancelled),
+      ], DateTime(2026, 9, 22));
+      expect(plan, isEmpty);
+    });
+
+    test('keeps only the nearest reminders, soonest first', () {
+      final plan = PaymentReminders.plan(
+        [
+          for (var i = 0; i < 30; i++)
+            _e('w$i', 1, BillingCycle.weekly, DateTime(2026, 9, 25)),
+        ],
+        DateTime(2026, 9, 22),
+      );
+      expect(plan, hasLength(PaymentReminders.maxPending));
+      for (var i = 1; i < plan.length; i++) {
+        expect(plan[i].fireAt.isBefore(plan[i - 1].fireAt), isFalse);
+      }
     });
   });
 

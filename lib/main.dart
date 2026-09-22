@@ -7,6 +7,7 @@ import 'app.dart';
 import 'data/backup/backup_service.dart';
 import 'data/local/json_file.dart';
 import 'data/local/settings_file.dart';
+import 'data/notifications/reminder_notifications.dart';
 import 'data/repositories/file_expense_repository.dart';
 import 'state/expense_store.dart';
 import 'state/settings_store.dart';
@@ -30,6 +31,12 @@ Future<void> main() async {
     settings: settings,
     locationFile: file('backup_location.json'),
   );
+
+  // Payment reminders follow every change to the expenses; the store also
+  // notifies when the app resumes on a new day.
+  ReminderNotifications(expenses: expenses, settings: settings)
+      .init()
+      .ignore();
 
   // Like a save on exit: back up whenever the app leaves the foreground.
   AppLifecycleListener(

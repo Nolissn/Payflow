@@ -6,6 +6,7 @@ import '../../shared/widgets/brand_mark.dart';
 import '../../shared/widgets/surfaces.dart';
 import '../../state/app_scope.dart';
 import 'backup_screen.dart';
+import 'permissions_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -90,6 +91,22 @@ class SettingsScreen extends StatelessWidget {
                   ),
                 ),
               ],
+            ),
+          ),
+          const SectionHeader(
+              title: 'Notifications',
+              padding: EdgeInsets.fromLTRB(4, 24, 4, 10)),
+          SurfaceCard(
+            padding: const EdgeInsets.symmetric(vertical: 6),
+            child: ListTile(
+              leading: const Icon(Icons.verified_user_outlined),
+              title: const Text('Permissions'),
+              subtitle: const Text('Payment reminders 7, 3 and 1 day ahead'),
+              trailing: const Icon(Icons.chevron_right_rounded),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                    builder: (_) => const PermissionsScreen()),
+              ),
             ),
           ),
           const SectionHeader(
