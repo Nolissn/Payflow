@@ -11,7 +11,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:payflow/app.dart';
-import 'package:payflow/data/demo/demo_expenses.dart';
+import '../test/fixtures/demo_expenses.dart';
 import 'package:payflow/data/repositories/in_memory_expense_repository.dart';
 import 'package:payflow/features/expense_detail/expense_detail_screen.dart';
 import 'package:payflow/features/expense_form/expense_form_sheet.dart';

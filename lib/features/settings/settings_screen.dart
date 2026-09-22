@@ -95,19 +95,6 @@ class SettingsScreen extends StatelessWidget {
             child: Column(
               children: [
                 ListTile(
-                  leading: const Icon(Icons.restart_alt_rounded),
-                  title: const Text('Load demo data'),
-                  subtitle: const Text('Replace everything with sample expenses'),
-                  onTap: () async {
-                    if (await _confirm(context,
-                        title: 'Load demo data?',
-                        message: 'Your current entries will be replaced.',
-                        action: 'Load')) {
-                      await store.resetDemoData();
-                    }
-                  },
-                ),
-                ListTile(
                   leading: Icon(Icons.delete_sweep_outlined,
                       color: Theme.of(context).colorScheme.error),
                   title: Text('Delete all data',

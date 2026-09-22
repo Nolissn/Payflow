@@ -2,7 +2,7 @@ import '../../domain/models/category.dart';
 import '../../domain/models/recurring_expense.dart';
 import 'expense_repository.dart';
 
-/// Keeps data in memory. Seeded with demo data; simulates a short network
+/// Keeps data in memory. Starts empty unless given a seed; simulates a short network
 /// latency so loading states behave like they will with a real backend.
 class InMemoryExpenseRepository implements ExpenseRepository {
   InMemoryExpenseRepository({

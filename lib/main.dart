@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import 'app.dart';
-import 'data/demo/demo_expenses.dart';
 import 'data/repositories/in_memory_expense_repository.dart';
 import 'state/expense_store.dart';
 import 'state/settings_store.dart';
@@ -13,9 +12,7 @@ void main() {
   // Supabase. Nothing else in the app depends on the concrete backend.
   final settings = SettingsStore();
   final expenses = ExpenseStore(
-    repository: InMemoryExpenseRepository(
-      seed: buildDemoExpenses(DateTime.now()),
-    ),
+    repository: InMemoryExpenseRepository(),
     settings: settings,
   )..load();
 

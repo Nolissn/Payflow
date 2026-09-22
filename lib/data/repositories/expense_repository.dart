@@ -12,7 +12,7 @@ class RepositoryException implements Exception {
 
 /// Storage boundary for recurring expenses.
 ///
-/// The app only talks to this interface. Swapping the in-memory demo
+/// The app only talks to this interface. Swapping the in-memory
 /// implementation for a Firebase, Supabase or local-database backed one
 /// requires no changes to state management or UI code.
 abstract interface class ExpenseRepository {
@@ -23,7 +23,7 @@ abstract interface class ExpenseRepository {
 
   Future<void> deleteExpense(String id);
 
-  /// Replaces the whole data set (used for "reset demo data" / imports).
+  /// Replaces the whole data set (used for "delete all data" / imports).
   Future<void> replaceAll(List<RecurringExpense> expenses);
 
   Future<List<ExpenseCategory>> fetchCategories();

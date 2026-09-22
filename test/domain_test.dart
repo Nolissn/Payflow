@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:payflow/core/utils/date_math.dart';
-import 'package:payflow/data/demo/demo_expenses.dart';
+import 'fixtures/demo_expenses.dart';
 import 'package:payflow/domain/models/billing_cycle.dart';
 import 'package:payflow/domain/models/category.dart';
 import 'package:payflow/domain/models/expense_status.dart';

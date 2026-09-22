@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:payflow/app.dart';
-import 'package:payflow/data/demo/demo_expenses.dart';
+import 'fixtures/demo_expenses.dart';
 import 'package:payflow/data/repositories/expense_repository.dart';
 import 'package:payflow/data/repositories/in_memory_expense_repository.dart';
 import 'package:payflow/domain/models/category.dart';

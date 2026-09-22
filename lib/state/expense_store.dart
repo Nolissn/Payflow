@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 
 import '../core/formatting/date_format.dart';
-import '../data/demo/demo_expenses.dart';
 import '../data/repositories/expense_repository.dart';
 import '../domain/models/category.dart';
 import '../domain/models/expense_status.dart';
@@ -116,13 +115,6 @@ class ExpenseStore extends ChangeNotifier {
     final expense = _expenses.where((e) => e.id == id).firstOrNull;
     if (expense == null) return;
     await save(expense.copyWith(status: status));
-  }
-
-  Future<void> resetDemoData() async {
-    final demo = buildDemoExpenses(_clock());
-    await _repository.replaceAll(demo);
-    _expenses = demo;
-    _changed();
   }
 
   Future<void> clearAll() async {

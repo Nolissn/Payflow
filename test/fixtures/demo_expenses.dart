@@ -1,9 +1,9 @@
-import '../../core/utils/date_math.dart';
-import '../../domain/models/billing_cycle.dart';
-import '../../domain/models/category.dart';
-import '../../domain/models/expense_status.dart';
-import '../../domain/models/notice_period.dart';
-import '../../domain/models/recurring_expense.dart';
+import 'package:payflow/core/utils/date_math.dart';
+import 'package:payflow/domain/models/billing_cycle.dart';
+import 'package:payflow/domain/models/category.dart';
+import 'package:payflow/domain/models/expense_status.dart';
+import 'package:payflow/domain/models/notice_period.dart';
+import 'package:payflow/domain/models/recurring_expense.dart';
 
 /// Realistic demo data. Dates are relative to [today] so the app always
 /// shows a lively upcoming schedule, whenever it is opened.
