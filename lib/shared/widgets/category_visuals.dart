@@ -65,7 +65,7 @@ class CategoryIcon extends StatelessWidget {
   }
 }
 
-/// Provider monogram tinted with the category colour: "N" for Netflix.
+/// Category icon badge for an expense, e.g. a globe for domains.
 class ExpenseAvatar extends StatelessWidget {
   const ExpenseAvatar({
     super.key,
@@ -79,21 +79,6 @@ class ExpenseAvatar extends StatelessWidget {
   final ExpenseCategory category;
   final double size;
   final bool muted;
-
-  String get _initials {
-    final words = expense.name
-        .trim()
-        .split(RegExp(r'\s+'))
-        .where((w) => w.isNotEmpty)
-        .toList();
-    if (words.isEmpty) return '?';
-    final first = words.first.characters.first.toUpperCase();
-    if (words.length == 1) return first;
-    final second = words[1].characters.first;
-    return RegExp(r'[A-Za-z0-9]').hasMatch(second)
-        ? '$first${second.toUpperCase()}'
-        : first;
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -109,16 +94,10 @@ class ExpenseAvatar extends StatelessWidget {
           color: color.withValues(alpha: context.isDark ? 0.2 : 0.13),
           borderRadius: BorderRadius.circular(size * 0.32),
         ),
-        child: Text(
-          _initials,
-          style: TextStyle(
-            fontFamily: Brand.fontFamily,
-            fontWeight: FontWeight.w800,
-            fontSize: size * (_initials.length > 1 ? 0.34 : 0.42),
-            letterSpacing: -0.5,
-            color: color,
-            height: 1,
-          ),
+        child: Icon(
+          CategoryVisuals.icon(category),
+          size: size * 0.5,
+          color: color,
         ),
       ),
     );
